@@ -8,6 +8,7 @@ const {
   login,
   autoLogin,
   resendCode,
+  checkNewUser,
 } = require("../controllers/User.controller");
 
 //! 24 importar express
@@ -31,6 +32,7 @@ UserRoutes.get("/register", upload.single("image"), registerWithRedirect);
 UserRoutes.post("/login", login);
 UserRoutes.post("/login/autoLogin", autoLogin);
 UserRoutes.post("/resend", resendCode);
+UserRoutes.post("/check", checkNewUser);
 
 /// ------------------> rutas que pueden ser redirect
 UserRoutes.get("/register/sendMail/:id", sendCode); // :id ---> es el nombre del param

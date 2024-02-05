@@ -404,6 +404,67 @@ const resendCode = async (req, res, next) => {
 
 // export resendCode
 
+//! ------------CHECKCODE:
+
+const checkNewUser = async (req, res, next) => {
+  try {
+    //! nos traemos de la req.body el email y codigo de confirmation
+    const { email, confirmationCode } = req.body;
+
+    const userExists = await User.findOne({ email });
+
+    if (!userExists) {
+      //!No existe----> 404 de no se encuentra
+      return res.status(404).json("User not found");
+    } else {
+      // cogemos que comparamos que el codigo que recibimos por la req.body y el del userExists es igual
+      if (confirmationCode === userExists.confirmationCode) {
+        try {
+          await userExists.updateOne({ check: true });
+
+          // hacemos un testeo de que este user se ha actualizado correctamente, hacemos un findOne
+          const updateUser = await User.findOne({ email });
+
+          // este finOne nos sirve para hacer un ternario que nos diga si la propiedad vale true o false
+          return res.status(200).json({
+            testCheckOk: updateUser.check == true ? true : false,
+          });
+        } catch (error) {
+          return res.status(404).json(error.message);
+        }
+      } else {
+        try {
+          /// En caso dec equivocarse con el codigo lo borramos de la base datos y lo mandamos al registro
+          await User.findByIdAndDelete(userExists._id);
+
+          // borramos la imagen
+          deleteImgCloudinary(userExists.image);
+
+          // devolvemos un 200 con el test de ver si el delete se ha hecho correctamente
+          return res.status(200).json({
+            userExists,
+            check: false,
+
+            // test en el runtime sobre la eliminacion de este user
+            delete: (await User.findById(userExists._id))
+              ? "error delete user"
+              : "ok delete user",
+          });
+        } catch (error) {
+          return res
+            .status(404)
+            .json(error.message || "error general delete user");
+        }
+      }
+    }
+  } catch (error) {
+    // siempre en el catch devolvemos un 500 con el error general
+    return next(setError(500, error.message || "General error check code"));
+  }
+};
+
+// exportar checknewuser
+
 //! 22 como lo consume la ruta, 23 a ruta:
 
 module.exports = {
@@ -414,4 +475,5 @@ module.exports = {
   login,
   autoLogin,
   resendCode,
+  checkNewUser,
 };
