@@ -36,6 +36,7 @@ const {
 } = require("../../state/state.data");
 const { generateToken } = require("../../utils/token");
 const setError = require("../../helpers/handle-error");
+const randomPassword = require("../../utils/randomPassword");
 dotenv.config();
 
 //! 20
@@ -465,6 +466,109 @@ const checkNewUser = async (req, res, next) => {
 
 // exportar checknewuser
 
+//! --------------------CAMBIO PASSWORD NO LOGADO:
+
+const changePassword = async (req, res, next) => {
+  try {
+    /** vamos a recibir  por el body el email y vamos a comprobar que
+     * este user existe en la base de datos
+     */
+    const { email } = req.body;
+    console.log(req.body);
+    const userDb = await User.findOne({ email });
+    if (userDb) {
+      /// si existe hacemos el redirect
+      const PORT = process.env.PORT;
+      return res.redirect(
+        307,
+        `http://localhost:${PORT}/api/v1/users/sendPassword/${userDb._id}`
+      );
+    } else {
+      return res.status(404).json("User no register");
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// Export changePass
+
+const sendPassword = async (req, res, next) => {
+  try {
+    /** VAMOS A BUSCAR AL USER POOR EL ID DEL PARAM */
+    const { id } = req.params;
+    const userDb = await User.findById(id);
+    const email = process.env.EMAIL;
+    const password = process.env.PASSWORD;
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: email,
+        pass: password,
+      },
+    });
+    let passwordSecure = randomPassword();
+    console.log(passwordSecure);
+    const mailOptions = {
+      from: email,
+      to: userDb.email,
+      subject: "-----",
+      text: `User: ${userDb.name}. Your new code login is ${passwordSecure} Hemos enviado esto porque tenemos una solicitud de cambio de contraseña, si no has sido ponte en contacto con nosotros, gracias.`,
+    };
+    transporter.sendMail(mailOptions, async function (error, info) {
+      if (error) {
+        /// SI HAY UN ERROR MANDO UN 404
+        console.log(error);
+        return res.status(404).json("dont send email and dont update user");
+      } else {
+        // SI NO HAY NINGUN ERROR
+        console.log("Email sent: " + info.response);
+        ///guardamos esta contraseña en mongo db
+
+        /// 1 ) encriptamos la contraseña
+        const newPasswordBcrypt = bcrypt.hashSync(passwordSecure, 10);
+
+        try {
+          /** este metodo te lo busca por id y luego modifica las claves que le digas
+           * en este caso le decimos que en la parte dde password queremos meter
+           * la contraseña hasheada
+           */
+          await User.findByIdAndUpdate(id, { password: newPasswordBcrypt });
+
+          //!------------------ test --------------------------------------------
+          // vuelvo a buscar el user pero ya actualizado
+          const userUpdatePassword = await User.findById(id);
+
+          // hago un compare sync ----> comparo una contraseña no encriptada con una encrptada
+          /// -----> userUpdatePassword.password ----> encriptada
+          /// -----> passwordSecure -----> contraseña no encriptada
+          if (bcrypt.compareSync(passwordSecure, userUpdatePassword.password)) {
+            // si son iguales quiere decir que el back se ha actualizado correctamente
+            return res.status(200).json({
+              updateUser: true,
+              sendPassword: true,
+            });
+          } else {
+            /** si no son iguales le diremos que hemos enviado el correo pero que no
+             * hemos actualizado el user del back en mongo db
+             */
+            return res.status(404).json({
+              updateUser: false,
+              sendPassword: true,
+            });
+          }
+        } catch (error) {
+          return res.status(404).json(error.message);
+        }
+      }
+    });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+//export sendPass
+
 //! 22 como lo consume la ruta, 23 a ruta:
 
 module.exports = {
@@ -476,4 +580,6 @@ module.exports = {
   autoLogin,
   resendCode,
   checkNewUser,
+  changePassword,
+  sendPassword,
 };

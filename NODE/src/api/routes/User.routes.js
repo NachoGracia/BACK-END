@@ -9,6 +9,8 @@ const {
   autoLogin,
   resendCode,
   checkNewUser,
+  changePassword,
+  sendPassword,
 } = require("../controllers/User.controller");
 
 //! 24 importar express
@@ -25,7 +27,7 @@ const UserRoutes = express.Router();
 
 UserRoutes.post("/registerLargo", upload.single("image"), registerLargo); //!ENDOPOINT
 
-//! -----------LOS OTROS CONTROLADORES CON SUS ENDPOINTS:
+//! -----------LOS OTROS CONTROLADORES CON SUS ENDPOINTS, sin AUTH:
 
 UserRoutes.post("/registerUtil", upload.single("image"), register);
 UserRoutes.get("/register", upload.single("image"), registerWithRedirect);
@@ -33,10 +35,12 @@ UserRoutes.post("/login", login);
 UserRoutes.post("/login/autoLogin", autoLogin);
 UserRoutes.post("/resend", resendCode);
 UserRoutes.post("/check", checkNewUser);
+UserRoutes.patch("/forgotpassword", changePassword);
 
-/// ------------------> rutas que pueden ser redirect
+//! ------------------ rutas que pueden ser redirect
 UserRoutes.get("/register/sendMail/:id", sendCode); // :id ---> es el nombre del param
 module.exports = UserRoutes;
+UserRoutes.patch("/sendPassword/:id", sendPassword);
 
 //! 27 exportar, y consume el index, asi que 28 en index
 
