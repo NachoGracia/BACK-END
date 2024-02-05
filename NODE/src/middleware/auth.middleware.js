@@ -19,6 +19,7 @@ const isAuth = async (req, res, next) => {
   try {
     // vamos a decodificar el token para sacar el id
     const decoded = verifyToken(token, process.env.JWT_SECRET);
+    // Solo crea el req.user cuando endpoint autenticado. tiene como mw el auth
     req.user = await User.findById(decoded.id);
 
     // si todo esta bien continuamos

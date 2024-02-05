@@ -2,9 +2,12 @@
 
 const {
   registerLargo,
-  register,
   registerWithRedirect,
   sendCode,
+  register,
+  login,
+  autoLogin,
+  resendCode,
 } = require("../controllers/User.controller");
 
 //! 24 importar express
@@ -21,10 +24,13 @@ const UserRoutes = express.Router();
 
 UserRoutes.post("/registerLargo", upload.single("image"), registerLargo); //!ENDOPOINT
 
-//! -----------LOS OTROS TIPOS DE REGISTER: ESTADO GLOBAL Y REDIRECT:
+//! -----------LOS OTROS CONTROLADORES CON SUS ENDPOINTS:
 
 UserRoutes.post("/registerUtil", upload.single("image"), register);
 UserRoutes.get("/register", upload.single("image"), registerWithRedirect);
+UserRoutes.post("/login", login);
+UserRoutes.post("/login/autoLogin", autoLogin);
+UserRoutes.post("/resend", resendCode);
 
 /// ------------------> rutas que pueden ser redirect
 UserRoutes.get("/register/sendMail/:id", sendCode); // :id ---> es el nombre del param

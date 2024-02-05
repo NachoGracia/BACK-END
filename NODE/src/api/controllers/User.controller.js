@@ -30,6 +30,12 @@ const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const dotenv = require("dotenv");
 const sendEmail = require("../../utils/sendEmail");
+const {
+  setTestEmailSend,
+  getTestEmailSend,
+} = require("../../state/state.data");
+const { generateToken } = require("../../utils/token");
+const setError = require("../../helpers/handle-error");
 dotenv.config();
 
 //! 20
@@ -295,6 +301,117 @@ const sendCode = async (req, res, next) => {
 
 //! Necesitamos librerias bcrypt.compareSync y generateToken:
 
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const userDB = await User.findOne({ email });
+
+    if (userDB) {
+      // compara dos contraseñar una sin encryptar y otra que si lo esta
+      if (bcrypt.compareSync(password, userDB.password)) {
+        const token = generateToken(userDB._id, email);
+        return res.status(200).json({
+          user: userDB,
+          token,
+        });
+      } else {
+        return res.status(404).json("password dont match");
+      }
+    } else {
+      return res.status(404).json("User no register");
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+
+// export login y a rutas
+
+//! *---------------------AUTOLOGIN:
+
+const autoLogin = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    const userDB = await User.findOne({ email });
+
+    if (userDB) {
+      // comparo dos contraseñas encriptadas
+      if (password == userDB.password) {
+        const token = generateToken(userDB._id, email);
+        return res.status(200).json({
+          user: userDB,
+          token,
+        });
+      } else {
+        return res.status(404).json("password dont match");
+      }
+    } else {
+      return res.status(404).json("User no register");
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+
+//expot
+
+//!------------------------RESEND CODE:
+
+const resendCode = async (req, res, next) => {
+  try {
+    //! vamos a configurar nodemailer porque tenemos que enviar un codigo
+    const email = process.env.EMAIL;
+    const password = process.env.PASSWORD;
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: email,
+        pass: password,
+      },
+    });
+
+    //! hay que ver que el usuario exista porque si no existe no tiene sentido hacer ninguna verificacion
+    const userExists = await User.findOne({ email: req.body.email });
+
+    if (userExists) {
+      const mailOptions = {
+        from: email,
+        to: req.body.email,
+        subject: "Confirmation code",
+        text: `tu codigo es ${userExists.confirmationCode}`,
+      };
+
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.log(error);
+          return res.status(404).json({
+            resend: false,
+          });
+        } else {
+          console.log("Email sent: " + info.response);
+          return res.status(200).json({
+            resend: true,
+          });
+        }
+      });
+    } else {
+      return res.status(404).json("User not found");
+    }
+  } catch (error) {
+    return next(setError(500, error.message || "Error general send code"));
+  }
+};
+
+// export resendCode
+
 //! 22 como lo consume la ruta, 23 a ruta:
 
-module.exports = { registerLargo, register, registerWithRedirect, sendCode };
+module.exports = {
+  registerLargo,
+  registerWithRedirect,
+  sendCode,
+  register,
+  login,
+  autoLogin,
+  resendCode,
+};
