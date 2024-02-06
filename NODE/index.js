@@ -40,6 +40,9 @@ app.use(express.urlencoded({ limit: "5mb", extended: false }));
 const UserRoutes = require("./src/api/routes/User.routes");
 app.use("/api/v1/users/", UserRoutes); //! RUTA GENERAL
 
+const TiendaRoutes = require("./src/api/routes/Tienda.routes");
+app.use("/api/v1/tiendas/", TiendaRoutes);
+
 //! -------------------> generamos un error de cuando no see encuentre la ruta
 app.use("*", (req, res, next) => {
   const error = new Error("Route not found");
