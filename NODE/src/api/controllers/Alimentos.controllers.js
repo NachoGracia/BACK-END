@@ -1,4 +1,5 @@
 const Alimento = require("../models/Alimientos.model");
+const Tienda = require("../models/Tienda.model");
 
 const createAlimento = async (req, res, next) => {
   let catchImg = req.file?.path;
@@ -37,11 +38,79 @@ const createAlimento = async (req, res, next) => {
 
 const toggleTiendas = async (req, res, next) => {
   try {
-    const { id } = req.params; // es el id de los alimentos,
-    const { tiendas } = req.body; // del body de tiendas, sacaremos los id para meterlos en alimentos
-    // buscar si el alimento que quiero meter existe
+    const { id } = req.params;
+    const { tiendas } = req.body;
+
     const alimentoById = await Alimento.findById(id);
-  } catch (error) {}
+
+    if (alimentoById) {
+      const arrayIdtiendas = tiendas.split(",");
+
+      await Promise.all(
+        arrayIdtiendas.map(async (tienda) => {
+          if (alimentoById.tiendas.includes(tienda)) {
+            try {
+              await Alimento.findByIdAndUpdate(id, {
+                $pull: { tiendas: tienda },
+              });
+
+              try {
+                await Tienda.findByIdAndUpdate(tienda, {
+                  $pull: { alimentos: id },
+                });
+              } catch (error) {
+                res.status(404).json({
+                  error: "error update tienda",
+                  message: error.message,
+                }) && next(error);
+              }
+            } catch (error) {
+              res.status(404).json({
+                error: "error update alimento",
+                message: error.message,
+              }) && next(error);
+            }
+          } else {
+            try {
+              await Alimento.findByIdAndUpdate(id, {
+                $push: { tiendas: tienda },
+              });
+              try {
+                await Tienda.findByIdAndUpdate(tienda, {
+                  $push: { alimentos: id },
+                });
+              } catch (error) {
+                res.status(404).json({
+                  error: "error update tienda",
+                  message: error.message,
+                }) && next(error);
+              }
+            } catch (error) {
+              res.status(404).json({
+                error: "error update alimento",
+                message: error.message,
+              }) && next(error);
+            }
+          }
+        })
+      )
+        .catch((error) => res.status(404).json({ error: error.message }))
+        .then(async () => {
+          return res.status(200).json({
+            dataUpdate: await Alimento.findById(id).populate("tiendas"),
+          });
+        });
+    } else {
+      return res.status(404).json("este alimento no existe");
+    }
+  } catch (error) {
+    return (
+      res.status(404).json({
+        error: "error catch",
+        message: error.message,
+      }) && next(error)
+    );
+  }
 };
 
-module.exports = { createAlimento };
+module.exports = { createAlimento, toggleTiendas };

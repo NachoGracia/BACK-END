@@ -1,6 +1,6 @@
-const { mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 
-const TiendaSchema = new mongoose.Schema(
+const tiendaSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, unique: true },
     type: { type: String, required: true },
@@ -14,6 +14,6 @@ const TiendaSchema = new mongoose.Schema(
   }
 );
 
-const Tienda = mongoose.model("tienda", TiendaSchema);
+const Tienda = mongoose.model("Tienda", tiendaSchema);
 
 module.exports = Tienda;
