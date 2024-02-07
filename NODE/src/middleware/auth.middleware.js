@@ -38,6 +38,7 @@ const isAuthAdmin = async (req, res, next) => {
   try {
     const decoded = verifyToken(token, process.env.JWT_SECRET);
     console.log(decoded);
+    //! aqui se genera el user autenticado
     req.user = await User.findById(decoded.id);
 
     //! -----> La unica diferencia es que comprobamos si es administrador

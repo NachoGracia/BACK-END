@@ -11,6 +11,8 @@ const {
   checkNewUser,
   changePassword,
   sendPassword,
+  modifyPassword,
+  update,
 } = require("../controllers/User.controller");
 
 //! 24 importar express
@@ -20,6 +22,8 @@ const express = require("express");
 //! 25 importar la subida del mw (el upload que hace el multer)
 
 const { upload } = require("../../middleware/files.middleware");
+const { isAuth, isAuthAdmin } = require("../../middleware/auth.middleware");
+const User = require("../models/User.model");
 
 //! 26 configurar la ruta del endpoint:
 
@@ -36,6 +40,10 @@ UserRoutes.post("/login/autoLogin", autoLogin);
 UserRoutes.post("/resend", resendCode);
 UserRoutes.post("/check", checkNewUser);
 UserRoutes.patch("/forgotpassword", changePassword);
+
+//!-----------------con AUTH:
+UserRoutes.patch("/changepassword", [isAuth], modifyPassword);
+UserRoutes.patch("/update/update", [isAuth], upload.single("image"), update);
 
 //! ------------------ rutas que pueden ser redirect
 UserRoutes.get("/register/sendMail/:id", sendCode); // :id ---> es el nombre del param
