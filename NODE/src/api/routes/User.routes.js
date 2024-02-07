@@ -13,6 +13,7 @@ const {
   sendPassword,
   modifyPassword,
   update,
+  deleteUser,
 } = require("../controllers/User.controller");
 
 //! 24 importar express
@@ -40,6 +41,7 @@ UserRoutes.post("/login/autoLogin", autoLogin);
 UserRoutes.post("/resend", resendCode);
 UserRoutes.post("/check", checkNewUser);
 UserRoutes.patch("/forgotpassword", changePassword);
+UserRoutes.delete("/", [isAuth], deleteUser);
 
 //!-----------------con AUTH:
 UserRoutes.patch("/changepassword", [isAuth], modifyPassword);
