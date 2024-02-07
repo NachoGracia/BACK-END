@@ -6,7 +6,7 @@ const TiendaSchema = new mongoose.Schema(
     type: { type: String, required: true },
     location: { type: String, required: true },
     image: { type: String },
-    product: [{ type: mongoose.Schema.ObjectId, ref: "Alimento" }],
+    alimentos: [{ type: mongoose.Schema.ObjectId, ref: "Alimento" }],
     fav: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
   },
   {

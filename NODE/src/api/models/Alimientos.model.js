@@ -6,7 +6,7 @@ const alimentoSchema = new mongoose.Schema(
     type: { type: String, required: true },
     cad: { type: String },
     image: { type: String },
-    tienda: [{ type: mongoose.Schema.ObjectId, ref: "Tienda" }],
+    tiendas: [{ type: mongoose.Schema.ObjectId, ref: "Tienda" }],
     fav: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
   },
   {
