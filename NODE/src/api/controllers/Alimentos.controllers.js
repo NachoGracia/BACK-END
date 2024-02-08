@@ -113,4 +113,39 @@ const toggleTiendas = async (req, res, next) => {
   }
 };
 
-module.exports = { createAlimento, toggleTiendas };
+//! get by id:
+
+const getById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const alimentoById = await Alimento.findById(id);
+
+    if (alimentoById) {
+      return res.status(200).json(alimentoById);
+    } else {
+      return res.status(404).json("No se ha encontrado el alimento");
+    }
+  } catch (error) {
+    return res.status(404).json(error.message);
+  }
+};
+
+//! ---------get All:
+
+const getAll = async (req, res, next) => {
+  try {
+    const allAlimentos = await Alimento.find().populate("tiendas");
+    if (allAlimentos.length > 0) {
+      return res.status(200).json(allAlimentos);
+    } else {
+      return res.status(404).json("no se han encontrado alimentos");
+    }
+  } catch (error) {
+    return res.status(404).json({
+      error: "error al buscar alimentos",
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { createAlimento, toggleTiendas, getById, getAll };
