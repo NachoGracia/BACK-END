@@ -3,6 +3,7 @@ const {
   toggleAlimentos,
   getById,
   getAll,
+  getByName,
 } = require("../controllers/Tienda.controllers");
 const { createTienda } = require("../controllers/Tienda.controllers");
 const TiendaRoutes = require("express").Router();
@@ -10,4 +11,5 @@ TiendaRoutes.post("/", upload.single("image"), createTienda);
 TiendaRoutes.patch("/add/:id", toggleAlimentos);
 TiendaRoutes.get("/:id", getById);
 TiendaRoutes.get("/", getAll);
+TiendaRoutes.get("/byName/:name", getByName);
 module.exports = TiendaRoutes;

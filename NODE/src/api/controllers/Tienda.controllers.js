@@ -213,4 +213,26 @@ const getAll = async (req, res, next) => {
   }
 };
 
-module.exports = { createTienda, toggleAlimentos, getById, getAll };
+//! -----------------get by name:
+
+const getByName = async (req, res, next) => {
+  try {
+    const { name } = req.params;
+
+    const tiendaByName = await Tienda.find({ name });
+    if (tiendaByName.length > 0) {
+      return res.status(200).json(tiendaByName);
+    } else {
+      return res
+        .status(404)
+        .json("no se ha encontrado ninguna tienda con ese nombre");
+    }
+  } catch (error) {
+    return res.status(404).json({
+      error: "error al buscar por nombre de tienda",
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { createTienda, toggleAlimentos, getById, getAll, getByName };

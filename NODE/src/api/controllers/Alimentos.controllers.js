@@ -148,4 +148,26 @@ const getAll = async (req, res, next) => {
   }
 };
 
-module.exports = { createAlimento, toggleTiendas, getById, getAll };
+//! get by name:
+
+const getByName = async (req, res, next) => {
+  try {
+    const { name } = req.params;
+
+    const alimentoByName = await Alimento.find({ name });
+    if (alimentoByName.length > 0) {
+      return res.status(200).json(alimentoByName);
+    } else {
+      return res
+        .status(404)
+        .json("No se ha encontrado ningun alimento con ese nombre");
+    }
+  } catch (error) {
+    return res.status(404).json({
+      error: "error en la busqueda por nombre de alimento",
+      message: error.message,
+    });
+  }
+};
+
+module.exports = { createAlimento, toggleTiendas, getById, getAll, getByName };
