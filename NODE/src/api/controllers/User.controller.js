@@ -770,17 +770,19 @@ const toggleFavTiendas = async (req, res, next) => {
     const { favTiendas } = req.body;
 
     const userById = await User.findById(id);
+    console.log("🚀 ~ toggleFavTiendas ~ userById:", userById);
+
     if (userById) {
       const arrayIdTiendas = favTiendas.split(",");
       Promise.all(
         arrayIdTiendas.map(async (tienda, index) => {
-          if (userById.tiendas.includes(tienda)) {
+          if (userById.favTiendas.includes(tienda)) {
             try {
               await User.findByIdAndUpdate(id, {
-                $pull: { favTiendas: Tienda },
+                $pull: { favTiendas: tienda },
               });
               try {
-                await Tienda.findByIdAndUpdate(fav, {
+                await Tienda.findByIdAndUpdate(tienda, {
                   $pull: { fav: id },
                 });
               } catch (error) {
@@ -798,10 +800,10 @@ const toggleFavTiendas = async (req, res, next) => {
           } else {
             try {
               await User.findByIdAndUpdate(id, {
-                $push: { favTiendas: Tienda },
+                $push: { favTiendas: tienda },
               });
               try {
-                await Tienda.findByIdAndUpdate(fav, {
+                await Tienda.findByIdAndUpdate(tienda, {
                   $push: { fav: id },
                 });
               } catch (error) {
@@ -811,21 +813,20 @@ const toggleFavTiendas = async (req, res, next) => {
                 }) && next(error);
               }
             } catch (error) {
-              re.status(404).json({
+              res.status(404).json({
                 error: "error update user",
                 message: error.message,
               }) && next(error);
             }
           }
         })
-      ).then(async () => {
-        return res
-          .status(200)
-          .json({
+      )
+        .then(async () => {
+          return res.status(200).json({
             dataupdate: await User.findById(id).populate("favTiendas"),
-          })
-          .catch((error) => res.status(404).json(error.message));
-      });
+          });
+        })
+        .catch((error) => res.status(404).json(error.message));
     } else {
       return res.status(404).json("Este usuario no existe");
     }
