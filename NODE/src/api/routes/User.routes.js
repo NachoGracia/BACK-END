@@ -14,6 +14,7 @@ const {
   modifyPassword,
   update,
   deleteUser,
+  toggleFavTiendas,
 } = require("../controllers/User.controller");
 
 //! 24 importar express
@@ -42,6 +43,7 @@ UserRoutes.post("/resend", resendCode);
 UserRoutes.post("/check", checkNewUser);
 UserRoutes.patch("/forgotpassword", changePassword);
 UserRoutes.delete("/", [isAuth], deleteUser);
+UserRoutes.patch("/add/:id", toggleFavTiendas);
 
 //!-----------------con AUTH:
 UserRoutes.patch("/changepassword", [isAuth], modifyPassword);

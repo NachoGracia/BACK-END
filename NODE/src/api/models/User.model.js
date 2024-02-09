@@ -57,6 +57,8 @@ const UserSchema = new mongoose.Schema(
     image: {
       type: String,
     },
+
+    favTiendas: [{ type: mongoose.Schema.ObjectId, ref: "Tienda" }],
     /// cuando relacionamos un modelo de con otro lo hacemos con populate y el ref a otro modelo
   },
   {
