@@ -59,6 +59,7 @@ const UserSchema = new mongoose.Schema(
     },
 
     favTiendas: [{ type: mongoose.Schema.ObjectId, ref: "Tienda" }],
+    favAlimentos: [{ type: mongoose.Schema.ObjectId, ref: "Alimento" }],
     /// cuando relacionamos un modelo de con otro lo hacemos con populate y el ref a otro modelo
   },
   {

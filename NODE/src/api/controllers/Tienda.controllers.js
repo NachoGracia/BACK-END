@@ -1,3 +1,4 @@
+const { deleteImgCloudinary } = require("../../middleware/files.middleware");
 const enumOk = require("../../utils/enumOk");
 const Alimento = require("../models/Alimientos.model");
 const Tienda = require("../models/Tienda.model");
@@ -244,6 +245,7 @@ const update = async (req, res, next) => {
   try {
     const { id } = req.params;
     const tiendaById = await Tienda.findById(id);
+
     if (tiendaById) {
       const oldImg = tiendaById.image;
 
@@ -253,12 +255,12 @@ const update = async (req, res, next) => {
         name: req.body?.name ? req.body?.name : tiendaById.name,
       };
 
-      if (req.body?.gender) {
+      /* if (req.body?.gender) {
         const resultEnum = enumOk(req.body?.gender);
         customBody.gender = resultEnum.check
           ? req.body?.gender
           : tiendaById.gender;
-      }
+      }*/
 
       try {
         await Tienda.findByIdAndUpdate(id, customBody);
@@ -317,7 +319,11 @@ const update = async (req, res, next) => {
             update: true,
           });
         }
-      } catch (error) {}
+      } catch (error) {
+        console.log("🚀 ~ update ~ error:", error);
+
+        return res.status(404).json("imposible actualizar tienda");
+      }
     } else {
       return res.status(404).json("esta tienda no existe");
     }

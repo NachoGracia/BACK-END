@@ -39,6 +39,7 @@ const setError = require("../../helpers/handle-error");
 const randomPassword = require("../../utils/randomPassword");
 const enumOk = require("../../utils/enumOk");
 const Tienda = require("../models/Tienda.model");
+const Alimento = require("../models/Alimientos.model");
 dotenv.config();
 
 //! 20
@@ -770,7 +771,6 @@ const toggleFavTiendas = async (req, res, next) => {
     const { favTiendas } = req.body;
 
     const userById = await User.findById(id);
-    console.log("🚀 ~ toggleFavTiendas ~ userById:", userById);
 
     if (userById) {
       const arrayIdTiendas = favTiendas.split(",");
@@ -840,6 +840,82 @@ const toggleFavTiendas = async (req, res, next) => {
   }
 };
 
+//! ------------toggle de fav alimentos:
+const toggleFavAlimentos = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { favAlimentos } = req.body;
+
+    const userById = await User.findById(id);
+
+    if (userById) {
+      const arrayIdAlimentos = favAlimentos.split(",");
+      Promise.all(
+        arrayIdAlimentos.map(async (alimento, index) => {
+          if (userById.favAlimentos.includes(alimento)) {
+            try {
+              await User.findByIdAndUpdate(id, {
+                $pull: { favAlimentos: alimento },
+              });
+              try {
+                await Alimento.findByIdAndUpdate(alimento, {
+                  $pull: { favByUser: id },
+                });
+              } catch (error) {
+                re.status(404).json({
+                  error: "error update alimentos",
+                  message: error.message,
+                }) && next(error);
+              }
+            } catch (error) {
+              re.status(404).json({
+                error: "error update user",
+                message: error.message,
+              }) && next(error);
+            }
+          } else {
+            try {
+              await User.findByIdAndUpdate(id, {
+                $push: { favAlimentos: alimento },
+              });
+              try {
+                await Alimento.findByIdAndUpdate(alimento, {
+                  $push: { favByUser: id },
+                });
+              } catch (error) {
+                re.status(404).json({
+                  error: "error update alimentos",
+                  message: error.message,
+                }) && next(error);
+              }
+            } catch (error) {
+              res.status(404).json({
+                error: "error update user",
+                message: error.message,
+              }) && next(error);
+            }
+          }
+        })
+      )
+        .then(async () => {
+          return res.status(200).json({
+            dataupdate: await User.findById(id).populate("favAlimentos"),
+          });
+        })
+        .catch((error) => res.status(404).json(error.message));
+    } else {
+      return res.status(404).json("Este usuario no existe");
+    }
+  } catch (error) {
+    return (
+      res.status(404).json({
+        error: "Error catch",
+        message: error.message,
+      }) && next(error)
+    );
+  }
+};
+
 //! 22 como lo consume la ruta, 23 a ruta:
 
 module.exports = {
@@ -857,4 +933,5 @@ module.exports = {
   update,
   deleteUser,
   toggleFavTiendas,
+  toggleFavAlimentos,
 };

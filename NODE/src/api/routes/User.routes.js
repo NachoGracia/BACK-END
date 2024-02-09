@@ -15,6 +15,7 @@ const {
   update,
   deleteUser,
   toggleFavTiendas,
+  toggleFavAlimentos,
 } = require("../controllers/User.controller");
 
 //! 24 importar express
@@ -44,6 +45,7 @@ UserRoutes.post("/check", checkNewUser);
 UserRoutes.patch("/forgotpassword", changePassword);
 UserRoutes.delete("/", [isAuth], deleteUser);
 UserRoutes.patch("/add/:id", toggleFavTiendas);
+UserRoutes.patch("/add/alimentos/:id", toggleFavAlimentos);
 
 //!-----------------con AUTH:
 UserRoutes.patch("/changepassword", [isAuth], modifyPassword);

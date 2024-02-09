@@ -7,7 +7,7 @@ const alimentoSchema = new mongoose.Schema(
     cad: { type: String },
     image: { type: String },
     tiendas: [{ type: mongoose.Schema.ObjectId, ref: "Tienda" }],
-    fav: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
+    favByUser: [{ type: mongoose.Schema.ObjectId, ref: "User" }],
   },
   {
     timestamps: true,
